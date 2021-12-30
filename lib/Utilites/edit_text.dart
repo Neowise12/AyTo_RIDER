@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:rider/brand_colors.dart';
+import 'brand_colors.dart';
 
 class MyEditText extends StatelessWidget {
   const MyEditText({Key? key}) : super(key: key);

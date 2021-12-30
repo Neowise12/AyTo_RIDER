@@ -1,11 +1,15 @@
 // ignore_for_file: file_names
 
 import 'package:flutter/material.dart';
+import 'package:rider/LoginPages/otp_Page.dart';
 import 'package:rider/Utilites/edit_text.dart';
-import 'package:rider/brand_colors.dart';
+import '../Utilites/brand_colors.dart';
 
 class LoginPage extends StatefulWidget {
+
+
   const LoginPage({Key? key}) : super(key: key);
+
 
   @override
   _LoginPageState createState() => _LoginPageState();
@@ -14,14 +18,24 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
 
 
+  final  mycontroller = TextEditingController();
+
+
   @override
   Widget build(BuildContext context) {
 
      final button = SizedBox(
        width: 100,
        height: 35,
-       child: ElevatedButton(onPressed: (){
-         print("done");},
+       child: ElevatedButton(
+         onPressed: (){
+         Navigator.of(context).push(
+             MaterialPageRoute(builder: (context)=>OtpPage(mycontroller.text)
+             )
+         );
+
+         },
+
          child: Text("Proceed"),
          style: ElevatedButton.styleFrom(
            primary: BrandColors.button,
@@ -49,7 +63,8 @@ class _LoginPageState extends State<LoginPage> {
     final phonenumber = TextFormField(
       keyboardType: TextInputType.phone,
       autofocus: false,
-      initialValue: '',
+      //initialValue: '',
+      controller: mycontroller,
       decoration: InputDecoration(
         hintText: 'Phone Number',
         hintStyle: const TextStyle(
@@ -57,6 +72,7 @@ class _LoginPageState extends State<LoginPage> {
         ),
         contentPadding: EdgeInsets.fromLTRB(10.0, 10.0, 20.0, 10.0),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(30.0)),
+
       ),
     );
 
@@ -122,7 +138,7 @@ class _LoginPageState extends State<LoginPage> {
                   padding: const EdgeInsets.all(8.0),
                   child: Center(
                     child: RichText(
-                      text: TextSpan(
+                      text: const TextSpan(
                         text: "Don't have an account? ",
                         style: TextStyle(
                           color: Colors.black,
@@ -134,7 +150,6 @@ class _LoginPageState extends State<LoginPage> {
                               color: BrandColors.signup,
                               fontWeight: FontWeight.bold
                             )
-
                           )
                         ]
 
