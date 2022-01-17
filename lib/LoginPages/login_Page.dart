@@ -1,170 +1,250 @@
 // ignore_for_file: file_names
 
+
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:rider/LoginPages/otp_Page.dart';
-import 'package:rider/Utilites/edit_text.dart';
+import 'package:rider/LoginPages/signUp_page.dart';
+import 'package:rider/mainPage/mainpage.dart';
 import '../Utilites/brand_colors.dart';
 
 class LoginPage extends StatefulWidget {
-
-
   const LoginPage({Key? key}) : super(key: key);
-
 
   @override
   _LoginPageState createState() => _LoginPageState();
 }
 
 class _LoginPageState extends State<LoginPage> {
+  late String smsCode;
+  bool codeSent = false;
+  final _codeController = TextEditingController();
+  final _formkey = GlobalKey<FormState>();
 
+  Future<void> loginUser(String phone, BuildContext context) async {
+    FirebaseAuth _auth = FirebaseAuth.instance;
+    _auth.verifyPhoneNumber(
+        phoneNumber: "+91${phone}",
+        timeout: Duration(seconds: 60),
+        verificationCompleted: (AuthCredential credential) async {
+          UserCredential result = await _auth.signInWithCredential(credential);
+          User? user = result.user;
+          if (user != null) {
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => MainPage(user)));
+          }
+        },
+        verificationFailed: (FirebaseAuthException e) {
+          print(e);
+        },
+        codeSent: (String verificationId, int? resendToken) {
 
-  final  mycontroller = TextEditingController();
+          setState(() {
+            this.codeSent= true;
+          });
+          showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (context) {
+                return AlertDialog(
+                  title: Text("Give the code?"),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      TextField(
+                        controller: _codeController,
+                      ),
+                    ],
+                  ),
+                  actions: <Widget>[
+                    ElevatedButton(
+                      style:
+                          ElevatedButton.styleFrom(primary: BrandColors.button),
+                      child: const Text(
+                        "Confirm",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      onPressed: () async {
+                        final code = _codeController.text.trim();
+                        AuthCredential credential =
+                            PhoneAuthProvider.credential(
+                                verificationId: verificationId, smsCode: code);
 
+                        UserCredential result =
+                            await _auth.signInWithCredential(credential);
+
+                        User? user = result.user;
+
+                        if (user != null) {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => MainPage(user)));
+                        } else {
+                          print("Error");
+                        }
+                      },
+                    )
+                  ],
+                );
+              }
+              );
+        },
+        codeAutoRetrievalTimeout: (String verificationId) {
+          setState(() {
+            //VerficationCode= verificationId;
+          });
+        });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final mycontroller = TextEditingController();
 
-     final button = SizedBox(
-       width: 100,
-       height: 35,
-       child: ElevatedButton(
-         onPressed: (){
-         Navigator.of(context).push(
-             MaterialPageRoute(builder: (context)=>OtpPage(mycontroller.text)
-             )
-         );
+    final button = SizedBox(
+        width: 100,
+        height: 35,
+        child: ElevatedButton(
+          onPressed: () {
+            if (_formkey.currentState!.validate()) {
+              final phone = mycontroller.text.trim();
 
-         },
-
-         child: Text("Proceed"),
-         style: ElevatedButton.styleFrom(
-           primary: BrandColors.button,
-           onPrimary: Colors.black
-
-
-         ),
-       ));
-
-
+              loginUser(phone, context);
+            }
+          },
+          child: Text("Proceed"),
+          style: ElevatedButton.styleFrom(
+              primary: BrandColors.button, onPrimary: Colors.black),
+        ));
     final countryCode = Container(
-    child: const Padding(
+        child: const Padding(
       padding: EdgeInsets.all(8.0),
-      child: Text("+91",style:  TextStyle(
-      color: Colors.white,
-      // fontSize: 28,
-      fontWeight: FontWeight.w600,
-
-      ),),
-    )
-
-    );
-
-
-    final phonenumber = TextFormField(
-      keyboardType: TextInputType.phone,
-      autofocus: false,
-      //initialValue: '',
-      controller: mycontroller,
-      decoration: InputDecoration(
-        hintText: 'Phone Number',
-        hintStyle: const TextStyle(
-          color: Colors.white, fontWeight: FontWeight.w600
+      child: Text(
+        "+91",
+        style: TextStyle(
+          color: Colors.white,
+          // fontSize: 28,
+          fontWeight: FontWeight.w600,
         ),
-        contentPadding: EdgeInsets.fromLTRB(10.0, 10.0, 20.0, 10.0),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(30.0)),
-
       ),
-    );
+    ));
+    final phonenumber = Padding(
+        padding: const EdgeInsets.all(5),
+        child: TextFormField(
+          keyboardType: TextInputType.phone,
+          autofocus: false,
+          //initialValue: '',
+          controller: mycontroller,
+          decoration: const InputDecoration(
+            hintText: 'Phone Number',
+            hintStyle:
+                TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+            contentPadding: EdgeInsets.fromLTRB(10.0, 10.0, 20.0, 10.0),
+            // border: OutlineInputBorder(borderRadius: BorderRadius.circular(30.0)
+            // ),
+          ),
+          validator: (value) {
+            if (value!.isEmpty) {
+              return "This field cannot be empty";
+            } else if (value.length != 10) {
+              return "Invaild phone Number";
+            }
+            return null;
+          },
+        ));
 
-
-    return Material(
-            child: SingleChildScrollView(
-          padding: EdgeInsets.only(left: 24.0, right: 24.0),
-          // shrinkWrap: false,
-          child: Column(
-
-            children: [
-              const SizedBox(
-              width: 100,
-              height: 100,
-            ),
-            const Center(
-              child: Text("Welcome",style: TextStyle(
-                  fontSize: 28, fontWeight: FontWeight.bold,
-                  color: BrandColors.enterphonenumber
-              ),),
-            ),
-            const SizedBox(
-              width: 350,
-              height: 50,
-            ),
-            Image.asset("assets/images/login1.png", fit: BoxFit.cover,height: 250,),
-              const SizedBox(
-                width: 500,
-                height: 50,
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(20.0, 20.0, 10.0, 10.0),
-                  child: Text("Enter your phone number",
-                  style: TextStyle(
-                    color:  BrandColors.enterphonenumber,
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold
-                  ),),
+    return Form(
+      key: _formkey,
+      child: Scaffold(
+          resizeToAvoidBottomInset: true,
+          body: SingleChildScrollView(
+              padding: EdgeInsets.only(left: 24.0, right: 24.0),
+              // shrinkWrap: false,
+              child: Column(children: [
+                const SizedBox(
+                  width: 100,
+                  height: 100,
                 ),
-              ),
-            Container(
-              decoration: BoxDecoration(
-                color: BrandColors.editText,
-                borderRadius: BorderRadius.circular(32.0),
-              ),
-              child: Row(
-
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  countryCode,
-                   Flexible(child: phonenumber),
-                ],
-              ),
-            ),
-              const SizedBox(
-                width: 100,
-                height: 50,
-              ),
-              button,
-              SizedBox(
-                height: 50,
-                width: 500,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Center(
-                    child: RichText(
-                      text: const TextSpan(
-                        text: "Don't have an account? ",
-                        style: TextStyle(
-                          color: Colors.black,
-                        ),
-                        children: <TextSpan>[
-                          TextSpan(
-                            text:"Sign Up",
+                const Center(
+                  child: Text(
+                    "Welcome",
+                    style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: BrandColors.enterphonenumber),
+                  ),
+                ),
+                const SizedBox(
+                  width: 350,
+                  height: 50,
+                ),
+                Image.asset(
+                  "assets/images/login1.png",
+                  fit: BoxFit.cover,
+                  height: 250,
+                ),
+                const SizedBox(
+                  width: 500,
+                  height: 50,
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(20.0, 20.0, 10.0, 10.0),
+                    child: Text(
+                      "Enter your phone number",
+                      style: TextStyle(
+                          color: BrandColors.enterphonenumber,
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                    color: BrandColors.editText,
+                    borderRadius: BorderRadius.circular(32.0),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      countryCode,
+                      Flexible(child: phonenumber),
+                    ],
+                  ),
+                ),
+                const SizedBox(
+                  width: 100,
+                  height: 45,
+                ),
+                button,
+                InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => SignUp()),
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Center(
+                      child: RichText(
+                        text: const TextSpan(
+                            text: "Don't have an account? ",
                             style: TextStyle(
-                              color: BrandColors.signup,
-                              fontWeight: FontWeight.bold
-                            )
-                          )
-                        ]
-
+                              color: Colors.black,
+                            ),
+                            children: <TextSpan>[
+                              TextSpan(
+                                  text: "Sign Up",
+                                  style: TextStyle(
+                                      color: BrandColors.signup,
+                                      fontWeight: FontWeight.bold))
+                            ]),
                       ),
                     ),
                   ),
                 ),
-              )
-            ]
-
-
-          )
-        )
-
+              ]))),
     );
-        }
-      }
-
+  }
+}

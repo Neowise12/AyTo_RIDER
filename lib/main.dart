@@ -1,12 +1,21 @@
+import 'dart:io';
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:rider/LoginPages/login_Page.dart';
-import 'package:rider/Utilites/edit_text.dart';
+
 import 'package:rider/Utilites/routers.dart';
 
-void main() {
-  runApp(const MyApp());
-}
 
+
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  runApp(MyApp());
+}
 class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
 
@@ -19,10 +28,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
 
-        initialRoute: MyRouters.loginRoute,
-        routes: {
-        MyRouters.loginRoute :(context)=> LoginPage(),
-        },
+        home:LoginPage(),
         );
   }
 }
