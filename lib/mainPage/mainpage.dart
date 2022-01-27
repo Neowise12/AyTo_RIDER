@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 
 
 class MainPage extends StatefulWidget {
-  final User user;
-  const MainPage(this.user);
+  //final User user;
+  const MainPage();
 
   @override
   _MainPageState createState() => _MainPageState();

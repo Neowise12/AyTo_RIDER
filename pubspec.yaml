@@ -30,6 +30,7 @@ dependencies:
   firebase_database: ^9.0.4
   firebase_core: ^1.10.6
   firebase_auth: ^3.3.4
+  flutter_secure_storage: ^5.0.2
   pinput: ^1.2.2
   flutter:
     sdk: flutter

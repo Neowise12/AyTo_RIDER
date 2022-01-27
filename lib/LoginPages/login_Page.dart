@@ -4,6 +4,7 @@
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:rider/LoginPages/otp_Page.dart';
 import 'package:rider/LoginPages/signUp_page.dart';
@@ -20,8 +21,30 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   late String smsCode;
   bool codeSent = false;
+  var srm;
   final _codeController = TextEditingController();
   final _formkey = GlobalKey<FormState>();
+  final _database=FirebaseDatabase.instance.ref();
+  FirebaseAuth auth = FirebaseAuth.instance;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _activeListeners();
+  }
+  void _activeListeners(){
+    final User? user=auth.currentUser;
+    final id=user?.uid ;
+    _database.child('Driver/${user?.uid}/FirstName').onValue.listen((event) {
+      final Object? description=event.snapshot.value ?? false;
+      setState(() {
+        print('Description=$description');
+        srm='$description';
+      });
+    });
+  }
+
 
   Future<void> loginUser(String phone, BuildContext context) async {
     FirebaseAuth _auth = FirebaseAuth.instance;
@@ -33,7 +56,7 @@ class _LoginPageState extends State<LoginPage> {
           User? user = result.user;
           if (user != null) {
             Navigator.push(context,
-                MaterialPageRoute(builder: (context) => MainPage(user)));
+                MaterialPageRoute(builder: (context) => MainPage()));
           }
         },
         verificationFailed: (FirebaseAuthException e) {
@@ -73,18 +96,34 @@ class _LoginPageState extends State<LoginPage> {
                                 verificationId: verificationId, smsCode: code);
 
                         UserCredential result =
-                            await _auth.signInWithCredential(credential);
+                            await _auth.signInWithCredential(credential).whenComplete(
+                () {
+                print('SRM=$srm');
+                if(srm.compareTo('false')==0) {
+                Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                builder: (context) => const SignUp(),
+                ),
+                );
+
+                }
+                else {
+                Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                builder: (context) => const MainPage(),
+                ),
+                );
+
+
+                }
+
+                },
+                );
 
                         User? user = result.user;
 
-                        if (user != null) {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => MainPage(user)));
-                        } else {
-                          print("Error");
-                        }
                       },
                     )
                   ],
