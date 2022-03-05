@@ -1,7 +1,5 @@
 // ignore_for_file: file_names
 
-
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -24,7 +22,7 @@ class _LoginPageState extends State<LoginPage> {
   var srm;
   final _codeController = TextEditingController();
   final _formkey = GlobalKey<FormState>();
-  final _database=FirebaseDatabase.instance.ref();
+  final _database = FirebaseDatabase.instance.ref();
   FirebaseAuth auth = FirebaseAuth.instance;
 
   @override
@@ -33,18 +31,18 @@ class _LoginPageState extends State<LoginPage> {
     super.initState();
     _activeListeners();
   }
-  void _activeListeners(){
-    final User? user=auth.currentUser;
-    final id=user?.uid ;
+
+  void _activeListeners() {
+    final User? user = auth.currentUser;
+    final id = user?.uid;
     _database.child('Driver/${user?.uid}/FirstName').onValue.listen((event) {
-      final Object? description=event.snapshot.value ?? false;
+      final Object? description = event.snapshot.value ?? false;
       setState(() {
         print('Description=$description');
-        srm='$description';
+        srm = '$description';
       });
     });
   }
-
 
   Future<void> loginUser(String phone, BuildContext context) async {
     FirebaseAuth _auth = FirebaseAuth.instance;
@@ -55,17 +53,16 @@ class _LoginPageState extends State<LoginPage> {
           UserCredential result = await _auth.signInWithCredential(credential);
           User? user = result.user;
           if (user != null) {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => MainPage()));
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => MainPage()));
           }
         },
         verificationFailed: (FirebaseAuthException e) {
           print(e);
         },
         codeSent: (String verificationId, int? resendToken) {
-
           setState(() {
-            this.codeSent= true;
+            this.codeSent = true;
           });
           showDialog(
               context: context,
@@ -95,41 +92,35 @@ class _LoginPageState extends State<LoginPage> {
                             PhoneAuthProvider.credential(
                                 verificationId: verificationId, smsCode: code);
 
-                        UserCredential result =
-                            await _auth.signInWithCredential(credential).whenComplete(
-                () {
-                print('SRM=$srm');
-                if(srm.compareTo('false')==0) {
-                Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                builder: (context) => const SignUp(),
-                ),
-                );
-
-                }
-                else {
-                Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                builder: (context) => const MainPage(),
-                ),
-                );
-
-
-                }
-
-                },
-                );
+                        UserCredential result = await _auth
+                            .signInWithCredential(credential)
+                            .whenComplete(
+                          () {
+                            print('SRM=$srm');
+                            if (srm.compareTo('false') == 0) {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const SignUp(),
+                                ),
+                              );
+                            } else {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const MainPage(),
+                                ),
+                              );
+                            }
+                          },
+                        );
 
                         User? user = result.user;
-
                       },
                     )
                   ],
                 );
-              }
-              );
+              });
         },
         codeAutoRetrievalTimeout: (String verificationId) {
           setState(() {

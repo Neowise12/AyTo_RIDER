@@ -27,15 +27,16 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      initialRoute:
-      FirebaseAuth.instance.currentUser == null ?"login":"mainpage",
+      //initialRoute: "mainpage",
+
+      //FirebaseAuth.instance.currentUser == null ?"login":"mainpage",
 
       routes: {
         'login':(context)=>LoginPage(),
         'mainpage':(context)=>MainPage(),
-      }
+      },
 
-      //home: LoginPage(),
+      home: MainPage(),
 
     );
   }
