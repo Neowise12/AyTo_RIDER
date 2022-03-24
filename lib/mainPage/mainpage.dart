@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:location/location.dart';
 import 'package:rider/Utilites/brand_colors.dart';
 import 'package:rider/Utilites/mydrawer.dart';
 
@@ -18,27 +19,64 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   GlobalKey<ScaffoldState> scaffoldkey= GlobalKey<ScaffoldState>();
+
+  GoogleMapController? _controller;
+  Location currentLocation = Location();
+  Set<Marker> _markers={};
+  double x =0, y=0;
+
+
   late GoogleMapController mapController;
-  final Completer<GoogleMapController> _controller = Completer();
+  //final Completer<GoogleMapController> _controller = Completer();
   double mapBottomPadding =0;
-  var geolocator =Geolocator();
-   late Position currentPosition;
+  //var geolocator =Geolocator();
+   //late Position currentPosition;
 
-  void setPositionlocator() async{
+  // void setPositionlocator() async{
+  //
+  //   Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.bestForNavigation);
+  //   currentPosition = position;
+  //   LatLng pos = LatLng(position.latitude,position.longitude);
+  //   CameraPosition cp = CameraPosition(target: pos,zoom: 14);
+  //   mapController.animateCamera(CameraUpdate.newCameraPosition(cp));
+  //
+  //
+  // }
 
-    Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.bestForNavigation);
-    currentPosition = position;
-    LatLng pos = LatLng(position.latitude,position.longitude);
-    CameraPosition cp = CameraPosition(target: pos,zoom: 14);
-    mapController.animateCamera(CameraUpdate.newCameraPosition(cp));
+  // static const CameraPosition _kGooglePlex = CameraPosition(
+  //   target: LatLng(37.42796133580664, -122.085749655962),
+  //   zoom: 14.4746,
+  // );
+  void getLocation() async{
+    var location = await currentLocation.getLocation();
+    currentLocation.onLocationChanged.listen((LocationData loc){
+
+      _controller?.animateCamera(CameraUpdate.newCameraPosition(new CameraPosition(
+        target: LatLng(loc.latitude ?? 0.0,loc.longitude?? 0.0),
+        zoom: 12.0,
+      )));
+      print(loc.latitude);
+      print(loc.longitude);
+      setState(() {
+        _markers.add(Marker(markerId: MarkerId('Home'),
+            position: LatLng(loc.latitude ?? 0.0, loc.longitude ?? 0.0)
+        ));
+        x = loc.latitude!;
+        y = loc.longitude!;
 
 
+      });
+    });
+    }
+
+  @override
+  void initState(){
+    super.initState();
+    setState(() {
+      getLocation();
+    });
   }
 
-  static const CameraPosition _kGooglePlex = CameraPosition(
-    target: LatLng(37.42796133580664, -122.085749655962),
-    zoom: 14.4746,
-  );
   @override
   Widget build(BuildContext context) {
     return  Scaffold(
@@ -53,18 +91,26 @@ class _MainPageState extends State<MainPage> {
             myLocationEnabled: true,
             zoomGesturesEnabled: true,
             zoomControlsEnabled: true,
-            initialCameraPosition: _kGooglePlex,
-            onMapCreated: (GoogleMapController controller){
-              _controller.complete(controller);
-              mapController= controller;
-              setState(() {
-                mapBottomPadding= 250;
-              });
-              setPositionlocator();
+            initialCameraPosition:CameraPosition(
+              target: LatLng(x,y),
+              zoom: 12.0,
+            ),
+           onMapCreated: (GoogleMapController controller){
+      _controller = controller;
 
-            },
+      getLocation();
+    },
+    markers: _markers,
 
-          ),
+
+          //     setState(() {
+          //       mapBottomPadding= 250;
+          //     });
+          //     setPositionlocator();
+          //
+          //   },
+          //
+           ),
           //drawer
           Positioned(
             top: 44,
