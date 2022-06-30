@@ -1,10 +1,10 @@
 import 'package:firebase_database/firebase_database.dart';
 
 class Need {
-  final String id;
-  final String lat;
-  final String long;
-  final String state;
+  var id;
+  var lat;
+  var long;
+  var state;
 
   Need({
     required this.id,
@@ -13,11 +13,16 @@ class Need {
     required this.state,
   });
 
-/*  Need.fromSnapshot(DataSnapshot snapshot, this.lat, this.long, this.state) :
+  /*Need.fromSnapshot(DataSnapshot snapshot, this.lat, this.long, this.state) :
         id = snapshot.key,
-        imageUrl = snapshot.value["lat"],
-        caption = snapshot.value["long"],
-        title = snapshot.value["state"];*/
+        lat = snapshot.value,
+        long = snapshot.value,
+        state = snapshot.value;*/
+
+  Future<DatabaseEvent> getItems() {
+    return FirebaseDatabase().reference().child("items").once();
+  }
+
 
   toJson() {
     return {
@@ -25,5 +30,10 @@ class Need {
       "long": long,
       "state": state,
     };
+  }
+
+  print(getItems()) {
+    // TODO: implement print
+    throw UnimplementedError();
   }
 }
