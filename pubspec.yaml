@@ -37,6 +37,7 @@ dependencies:
   location: ^4.3.0
   fluttertoast: ^8.0.8
   after_layout: ^1.1.0
+  http: ^0.13.4
 
 #  outline_material_icons: ^0.1.1
 
